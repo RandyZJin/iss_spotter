@@ -1,3 +1,4 @@
+const { times } = require("lodash");
 const request = require("request");
 // const fetchMyIP = function(callback) { 
 //   request.get(`https://api.ipify.org`, (error, response, body) => {
@@ -54,8 +55,6 @@ const fetchCoordsByIP = function(ip, callback) {
   request(`http://ipwho.is/${ip}`, (error, response, body) => {
     if (error) return callback(error, null);
 
-    
-    
     if (response.statusCode !== 200) {
       callback(Error(`Status Code ${response.statusCode} when fetching location: ${body}`), null);
       return;
@@ -70,32 +69,36 @@ const fetchCoordsByIP = function(ip, callback) {
   });
 }
 
-const fetchISSFlyOverTimes = function(coords, callback) {
+const fetchISSFlyOverTimes = function(error, coords, callback) {
   let latitude =  coords[0];
   let longitude = coords[1];
 
   request(`https://iss-flyover.herokuapp.com/json/?lat=${latitude}&lon=${longitude}`, (error, response, body) => {
     if (error) return callback(error, null);
 
-    
-    
     if (response.statusCode !== 200) {
       callback(Error(`error message: ${body}`), null);
       return;
     }
-    let passage = JSON.parse(body).response
-    for (pass of passage) {
-      const datetime = new Date(0);
-      datetime.setUTCSeconds(pass.risetime);
-      // let time = Datetime.setUTCseconds(pass.risetime)//.toString()
-       console.log(`Next pass at ${datetime} for ${pass.duration} seconds!`)
-    }
-
+    let output = JSON.parse(body).response
+    // console.log("fetchFlyover: ", output);
+    callback (output);
   });
   // ...
 };
 
-const nextISSTimesForMyLocation = function(callback) {
+const nextISSTimesForMyLocation = function(error, time, callback) {
+  let passage = time;
+  // console.log("passage: ", time)
+  const timetable = [];
+    for (pass of passage) {
+      const datetime = new Date(0);
+      datetime.setUTCSeconds(pass.risetime);
+      // let time = Datetime.setUTCseconds(pass.risetime)//.toString()
+      //  console.log(`Next pass at ${datetime} for ${pass.duration} seconds!`)
+       timetable.push(`Next pass at ${datetime} for ${pass.duration} seconds!`)
+    }
+    callback(timetable)
   // empty for now
 }
 
